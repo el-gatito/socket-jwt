@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"
+        integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthllibdOSo6qAiN+yXNHqtgdTvFXMT4"
+        crossorigin="anonymous"></script>
+    <title>JWT Auth</title>
+</head>
+
+<body>
+    <input type="text" id="username" placeholder="Username" />
+    <button id="authButton">Autenticar</button>
+    <button id="connectButton">Conectar ao socket</button>
+
+    <script>
+        document.getElementById('authButton').addEventListener('click', function () {
+            fetch('http://localhost:3000/auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: document.getElementById('username').value }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    localStorage.setItem('token', data.token);
+                    alert(`Autenticado com sucesso como ${data.username}`);
+                })
+                .catch((error) => {
+                    console.error('Erro:', error);
+                });
+        });
+
+        document.getElementById('connectButton').addEventListener('click', function () {
+            const token = localStorage.getItem('token');
+
+            const socket = io('http://localhost:3000', {
+                path: '/socket.io/',
+                transports: ['websocket'],
+                auth: {
+                    token: token
+                }
+            });
+
+            socket.on('connect', () => {
+                alert('Conectado ao socket com sucesso');
+            });
+
+            socket.on('connect_error', (error) => {
+                alert('Erro ao conectar ao socket: ' + error.message);
+            });
+        });
+    </script>
+</body>
+
+</html>
